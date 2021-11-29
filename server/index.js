@@ -13,7 +13,7 @@ app.use(express.json());
 const db = mysql.createConnection({
     user: "root",
     host: "localhost",
-    password: "",
+    password: "", //Write your own root password here
     database: "PasswordManager"
 })
 
@@ -44,10 +44,31 @@ app.get("/showpasswords", (req, res) => {
     });
 });
 
+app.delete("/deletepassword/:id", (req, res) => {
+    db.query("DELETE FROM passwords WHERE id = ?", req.params.id, (err, result) => {
+        if(err) {
+            console.log(err);
+        } else {
+            res.send(result);
+        }
+    });
+});
+
+app.put("/updatepassword/:id", (req, res) => {
+
+    const hashedPassword = encrypt(req.body.password);
+    db.query("UPDATE passwords SET passwords = ?, iv = ? WHERE id = ?", [hashedPassword.password, hashedPassword.iv, req.params.id], (err, result) => {
+        if(err) {
+            console.log(err);
+        } else {
+            res.send(result);
+        }
+    });
+});
+
 app.post("/decryptpassword", (req, res) => {
     res.send(decrypt(req.body));
 });
-
 
 app.listen(PORT, ()=> {
     console.log("Server is running");
